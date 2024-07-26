@@ -296,4 +296,116 @@ pool_forward_test_2(pool_forward)
 print("========================================")
 
 
+"""
+Exercise 5: Convolutional Layer Backward Pass
+To implement the backward propagation for the convolution function, we need to do the following steps:
+    - Computing dA: according to the formula:  𝑑𝐴 += ∑ℎ∑𝑤 = 𝑊𝑐 × 𝑑𝑍ℎ𝑤
+    - Computing dW: according to the formula: 𝑑𝑊𝑐 += ∑ℎ∑𝑤 = 𝑎_𝑠𝑙𝑖𝑐𝑒 × 𝑑𝑍ℎ𝑤
+    - Computing db: according to the formula: 𝑑𝑏 = ∑ℎ∑𝑤 𝑑𝑍ℎ𝑤
 
+Argument:
+    dZ: gradient of the cost with respect to the output of the conv layer (Z), numpy array of shape (m, n_H, n_W, n_C)
+    cache: cache of values needed for the conv_backward(), output of conv_forward()
+
+Returns:
+    dA_prev: gradient of the cost with respect to the input of the conv layer (A_prev), numpy array of shape (m, n_H_prev, n_W_prev, n_C_prev)
+    dW: gradient of the cost with respect to the weights of the conv layer (W) numpy array of shape (f, f, n_C_prev, n_C)
+    db: gradient of the cost with respect to the biases of the conv layer (b) numpy array of shape (1, 1, 1, n_C)
+"""
+
+def conv_backward(dZ, cache):
+    # Retrieve information from "cache"
+    (A_prev, W, b, hparameters) = cache
+
+    # Retrieve dimensions from A_prev's shape
+    (m, n_H_prev, n_W_prev, n_C_prev) = A_prev.shape
+
+    # Retrieve dimensions from W's shape
+    (f, f, n_C_prev, n_C) = W.shape
+
+    # Retrieve information from "hparameters"
+    stride = hparameters["stride"]
+    pad = hparameters["pad"]
+
+    # Retrieve dimensions from dZ's shape
+    (m, n_H, n_W, n_C) = dZ.shape
+
+    # Initialize dA_prev, dW, db with the correct shapes
+    dA_prev = np.zeros((m, n_H_prev, n_W_prev, n_C_prev))
+    dW = np.zeros((f, f, n_C_prev, n_C))
+    db = np.zeros((1, 1, 1, n_C))
+
+    # Pad A_prev and dA_prev
+    A_prev_pad = zero_pad(A_prev, pad)
+    dA_prev_pad = zero_pad(dA_prev, pad)
+
+    # Loop over the training examples
+    for i in range(m):
+        # Select the ith training example from A_prev_pad and dA_prev_pad
+        a_prev_pad = A_prev_pad[i]
+        da_prev_pad = dA_prev_pad[i]
+
+        # Loop over vertical axis of the output volume
+        for h in range(n_H):
+
+            # Loop over horizontal axis of the output volume
+            for w in range(n_W):
+
+                # Loop over the channels of the output volume
+                for c in range(n_C):
+
+                    # Find the corners of the current 'slice'
+                    vert_start = h * stride
+                    vert_end = vert_start + f
+                    horiz_start = w * stride
+                    horiz_end = horiz_start + f
+
+                    # Use the corners to define the slice from a_prev_pad
+                    a_slice = a_prev_pad[vert_start:vert_end, horiz_start:horiz_end, :]
+
+                    # Update gradients for the window and the filter's parameters
+                    da_prev_pad[vert_start:vert_end, horiz_start:horiz_end, :] += W[:, :, :, c] * dZ[i, h, w, c]
+                    dW[:, :, :, c] += a_slice * dZ[i, h, w, c]
+                    db[:, :, :, c] += dZ[i, h, w, c]
+
+        if pad != 0:
+            dA_prev[i, :, :, :] = da_prev_pad[pad:-pad, pad:-pad, :]
+        else:
+            dA_prev[i, :, :, :] = da_prev_pad
+
+
+
+    assert (dA_prev.shape == (m, n_H_prev, n_W_prev, n_C_prev))
+    return dA_prev, dW, db
+
+print("Exercise 5: Convolutional Layer Backward Pass")
+print("==========")
+# We'll run conv_forward to initialize the 'Z' and 'cache_conv",
+# which we'll use to test the conv_backward function
+np.random.seed(1)
+A_prev = np.random.randn(10, 4, 4, 3)
+W = np.random.randn(2, 2, 3, 8)
+b = np.random.randn(1, 1, 1, 8)
+hparameters = {"pad" : 2,
+               "stride": 2}
+Z, cache_conv = conv_forward(A_prev, W, b, hparameters)
+
+# Test conv_backward
+dA, dW, db = conv_backward(Z, cache_conv)
+
+print("dA_mean =", np.mean(dA))
+print("dW_mean =", np.mean(dW))
+print("db_mean =", np.mean(db))
+
+assert type(dA) == np.ndarray, "Output must be a np.ndarray"
+assert type(dW) == np.ndarray, "Output must be a np.ndarray"
+assert type(db) == np.ndarray, "Output must be a np.ndarray"
+assert dA.shape == (10, 4, 4, 3), f"Wrong shape for dA  {dA.shape} != (10, 4, 4, 3)"
+assert dW.shape == (2, 2, 3, 8), f"Wrong shape for dW {dW.shape} != (2, 2, 3, 8)"
+assert db.shape == (1, 1, 1, 8), f"Wrong shape for db {db.shape} != (1, 1, 1, 8)"
+assert np.isclose(np.mean(dA), 1.4524377), "Wrong values for dA"
+assert np.isclose(np.mean(dW), 1.7269914), "Wrong values for dW"
+assert np.isclose(np.mean(db), 7.8392325), "Wrong values for db"
+
+print("\033[92m All tests passed.")
+print("========================================")
