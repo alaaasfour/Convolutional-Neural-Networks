@@ -40,7 +40,8 @@ def zero_pad(X, pad):
     X_pad = np.pad(X, ((0, 0), (pad, pad), (pad, pad), (0, 0)), 'constant', constant_values = (0, 0))
     return X_pad
 
-
+print("Exercise 1: Zero-Padding")
+print("==========")
 np.random.seed(1)
 x = np.random.randn(4, 3, 3, 2)
 x_pad = zero_pad(x, 3)
@@ -56,7 +57,7 @@ axarr[1].set_title('x_pad')
 axarr[1].imshow(x_pad[0, :, :, 0])
 plt.show()
 zero_pad_test(zero_pad)
-
+print("========================================")
 
 """
 Exercise 2: Single Step of Convolution
@@ -81,6 +82,8 @@ def conv_single_step(a_slice_prev, W, b):
 
     return Z
 
+print("Exercise 2: Single Step of Convolution")
+print("==========")
 np.random.seed(1)
 a_slice_prev = np.random.randn(4, 4, 3)
 W = np.random.randn(4, 4, 3)
@@ -92,4 +95,4 @@ conv_single_step_test(conv_single_step)
 
 assert (type(Z) == np.float64), "You must cast the output to numpy float 64"
 assert np.isclose(Z, -6.999089450680221), "Wrong value"
-
+print("========================================")
