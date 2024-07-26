@@ -188,3 +188,112 @@ print("cache_conv[0][1][2][3] =\n", cache_0_1_2_3)
 conv_forward_test_1(z_mean, z_0_2_1, cache_0_1_2_3)
 conv_forward_test_2(conv_forward)
 print("========================================")
+
+"""
+Exercise 4: Pooling Layer - Forward Pooling
+The pooling layer reduces the height and width of the input. This helps reduce computation, and it helps make feature detectors more 
+invariant to its position in the input. The two types of pooling layers are:
+    - Max-pooling: slides an (f, f) window over the input and stores the maximum value of the window in the output.
+    - Average-pooling layer: slides an (f, f) window over the input and stores the average value of the window in the output. 
+
+These pooling layers have no parameters for backpropagation to train. However, they have hyperparameters such as the window size f.
+This specifies the height and width of the 𝑓×𝑓 window we would compute a max or average over.
+
+Argument:
+    A_prev: Input data, numpy array of shape (m, n_H_prev, n_W_prev, n_C_prev)
+    hparameters: python dictionary containing "f" and "stride"
+    mode: the pooling mode you would like to use, defined as a string ("max" or "average")
+
+Returns:
+    A: output of the pool layer, a numpy array of shape (m, n_H, n_W, n_C)
+    cache: cache used in the backward pass of the pooling layer, contains the input and hparameters 
+"""
+
+def pool_forward(A_prev, hparameters, mode = "max"):
+    # Retrieve dimensions from the input shape
+    (m, n_H_prev, n_W_prev, n_C_prev) = A_prev.shape
+
+    # Retrieve hyperparameters from hparameters
+    f = hparameters["f"]
+    stride = hparameters["stride"]
+
+    # Define the dimensions of the output
+    n_H = int(1 + (n_H_prev - f) / stride)
+    n_W = int(1 + (n_W_prev - f) / stride)
+    n_C = n_C_prev
+
+    # Initialize output matrix A
+    A = np.zeros((m, n_H, n_W, n_C))
+
+    # Loop over the training examples
+    for i in range(m):
+
+        # Loop on the vertical axis of the output volume
+        for h in range(n_H):
+            # Find the vertical start and end of the current 'slice'
+            vert_start = h * stride
+            vert_end = vert_start + f
+
+            # Loop on the horizontal axis of the output volume
+            for w in range(n_W):
+                # Find the vertical start and end of the current 'slice'
+                horiz_start = w * stride
+                horiz_end = horiz_start + f
+
+                for c in range(n_C):
+                    # Use the corners to define the current slice on the ith training example of A_prev, channel c.
+                    a_slice_prev = A_prev[i, vert_start:vert_end, horiz_start:horiz_end, c]
+
+                    # Compute the pooling operation on the slice.
+                    if mode == "max":
+                        A[i, h, w, c] = np.max(a_slice_prev)
+                    elif mode == "average":
+                        A[i, h, w, c] = np.mean(a_slice_prev)
+
+    # We will store the input and hparameters in 'cache' for pool_backward()
+    cache = (A_prev, hparameters)
+
+    return A, cache
+
+
+print("Exercise 4: Pooling Layer - Forward Pooling")
+print("==========")
+# Case 1: stride of 1
+print("CASE 1:\n")
+np.random.seed(1)
+A_prev_case_1 = np.random.randn(2, 5, 5, 3)
+hparameters_case_1 = {"stride" : 1, "f": 3}
+
+A, cache = pool_forward(A_prev_case_1, hparameters_case_1, mode = "max")
+print("mode = max")
+print("A.shape = " + str(A.shape))
+print("A[1, 1] =\n", A[1, 1])
+A, cache = pool_forward(A_prev_case_1, hparameters_case_1, mode = "average")
+print("mode = average")
+print("A.shape = " + str(A.shape))
+print("A[1, 1] =\n", A[1, 1])
+
+pool_forward_test_1(pool_forward)
+
+# Case 2: stride of 2
+print("\n\033[0mCASE 2:\n")
+np.random.seed(1)
+A_prev_case_2 = np.random.randn(2, 5, 5, 3)
+hparameters_case_2 = {"stride" : 2, "f": 3}
+
+A, cache = pool_forward(A_prev_case_2, hparameters_case_2, mode = "max")
+print("mode = max")
+print("A.shape = " + str(A.shape))
+print("A[0] =\n", A[0])
+print()
+
+A, cache = pool_forward(A_prev_case_2, hparameters_case_2, mode = "average")
+print("mode = average")
+print("A.shape = " + str(A.shape))
+print("A[1] =\n", A[1])
+
+pool_forward_test_2(pool_forward)
+print("========================================")
+
+
+
