@@ -96,3 +96,95 @@ conv_single_step_test(conv_single_step)
 assert (type(Z) == np.float64), "You must cast the output to numpy float 64"
 assert np.isclose(Z, -6.999089450680221), "Wrong value"
 print("========================================")
+
+"""
+Exercise 3: Convolutional Neural Networks - Forward Pass
+In the forward pass, we will take many filters and convolve them on the input. Each 'convolution' gives us a 2D matrix output. 
+We will then stack these outputs to get a 3D volume.
+
+We will implement the conv_forward to convolve the filter W on an input activation A_prev
+
+Argument:
+    A_prev: output activations of the previous layer, numpy array of shape (m, n_H_prev, n_W_prev, n_C_prev)
+    W: Weights, numpy array of shape (f, f, n_C_prev, n_C)
+    b: Biases, numpy array of shape (1, 1, 1, n_C)
+    hparameters: python dictionary containing "stride" and "pad"
+
+Returns:
+    Z: conv output, numpy array of shape (m, n_H, n_W, n_C)
+    cache: cache of values needed for the conv_backward() function
+"""
+
+def conv_forward(A_prev, W, b, hparameters):
+    # Retrieve dimensions from A_prev's shape
+    (m, n_H_prev, n_W_prev, n_C_prev) = A_prev.shape
+
+    # Retrieve dimensions from W's shape
+    (f, f, n_C_prev, n_C) = W.shape
+
+    # Retrieve information from "hparameters"
+    stride = hparameters["stride"]
+    pad = hparameters["pad"]
+
+    # Compute the dimensions of the CONV output volume
+    n_H = int((n_H_prev - f + 2 * pad) / stride) + 1
+    n_W = int((n_W_prev - f + 2 * pad) / stride) + 1
+
+    # Initialize the output volume Z with zeros.
+    Z = np.zeros((m, n_H, n_W, n_C))
+
+    # Create A_prev_pad by padding A_prev
+    A_prev_pad = np.pad(A_prev, ((0, 0), (pad, pad), (pad, pad), (0, 0)), 'constant', constant_values = (0, 0))
+
+    # Loop over the batch of training examples
+    for i in range(m):
+        # Select ith training example's padded activation
+        a_prev_pad = A_prev_pad[i]
+
+        # Loop over vertical axis of the output volume
+        for h in range(n_H):
+            # Find the vertical start and end of the current 'slice'
+            vert_start = h * stride
+            vert_end = vert_start + f
+
+            # Loop over horizontal axis of the output volume
+            for w in range(n_W):
+                # Find the horizontal start and end of the current 'slice'
+                horiz_start = w * stride
+                horiz_end = horiz_start + f
+
+                # Loop over channels (= filters) of the output volume
+                for c in range(n_C):
+                    # Using the corners to define the (3D) slice of a_prev_pad
+                    a_slice_prev = a_prev_pad[vert_start:vert_end, horiz_start:horiz_end, :]
+
+                    # Convolve the (3D) slice with the correct filter W and bias b, to get back one output neuron.
+                    weights = W[:, :, :, c]
+                    biases = b[:, :, :, c]
+                    Z[i, h, w, c] = conv_single_step(a_slice_prev, weights, biases)
+
+    # Saving the information in "cache" for the backprop
+    cache = (A_prev, W, b, hparameters)
+
+    return Z, cache
+
+print("Exercise 3: Convolutional Neural Networks - Forward Pass")
+print("==========")
+np.random.seed(1)
+A_prev = np.random.randn(2, 5, 7, 4)
+W = np.random.randn(3, 3, 4, 8)
+b = np.random.randn(1, 1, 1, 8)
+hparameters = {"pad" : 1,
+               "stride": 2}
+
+Z, cache_conv = conv_forward(A_prev, W, b, hparameters)
+z_mean = np.mean(Z)
+z_0_2_1 = Z[0, 2, 1]
+cache_0_1_2_3 = cache_conv[0][1][2][3]
+print("Z's mean =\n", z_mean)
+print("Z[0,2,1] =\n", z_0_2_1)
+print("cache_conv[0][1][2][3] =\n", cache_0_1_2_3)
+
+conv_forward_test_1(z_mean, z_0_2_1, cache_0_1_2_3)
+conv_forward_test_2(conv_forward)
+print("========================================")
