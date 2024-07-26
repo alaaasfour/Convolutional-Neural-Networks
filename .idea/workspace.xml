@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="485cb8e2-be5a-4d99-9654-e8455750d101" name="Changes" comment="" />
+    <list default="true" id="485cb8e2-be5a-4d99-9654-e8455750d101" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/Convolutional_Neural_Networks_Application.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -87,7 +90,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1721948916137</updated>
-      <workItem from="1721948919355" duration="15832000" />
+      <workItem from="1721948919355" duration="16296000" />
     </task>
     <servers />
   </component>
