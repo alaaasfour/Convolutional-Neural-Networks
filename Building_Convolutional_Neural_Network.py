@@ -409,3 +409,93 @@ assert np.isclose(np.mean(db), 7.8392325), "Wrong values for db"
 
 print("\033[92m All tests passed.")
 print("========================================")
+
+"""
+Exercise 6: Pooling Layer - Backward Pass
+Next, let's implement the backward pass for the pooling layer, starting with the MAX-POOL layer. 
+Even though a pooling layer has no parameters for backprop to update, we still need to backpropagate the gradient through 
+the pooling layer in order to compute gradients for layers that came before the pooling layer.
+
+- We need to build a helper function first called create_mask_from_window() which creates a "mask" matrix which keeps 
+track of where the maximum of the matrix is. True (1) indicates the position of the maximum in X, the other entries are False (0). 
+
+Argument:
+    x -- Array of shape (f, f)
+
+Returns:
+    mask -- Array of the same shape as window, contains a True at the position corresponding to the max entry of x.
+"""
+
+def create_mask_from_window(x):
+    mask = (x == np.max(x))
+
+    return mask
+
+print("Exercise 6: Pooling Layer - Backward Pass")
+print("==========")
+np.random.seed(1)
+x = np.random.randn(2, 3)
+mask = create_mask_from_window(x)
+print('x = ', x)
+print("mask = ", mask)
+
+x = np.array([[-1, 2, 3],
+              [2, -3, 2],
+              [1, 5, -2]])
+
+y = np.array([[False, False, False],
+     [False, False, False],
+     [False, True, False]])
+mask = create_mask_from_window(x)
+
+assert type(mask) == np.ndarray, "Output must be a np.ndarray"
+assert mask.shape == x.shape, "Input and output shapes must match"
+assert np.allclose(mask, y), "Wrong output. The True value must be at position (2, 1)"
+
+print("\033[92m All tests passed.")
+print("========================================")
+
+"""
+Exercise 7: Average Pooling - Backward Pass
+In max pooling, for each input window, all the "influence" on the output came from a single input value--the max. 
+In average pooling, every element of the input window has equal influence on the output. So to implement backprop, 
+we will now implement a helper function that reflects this.
+
+We will implement the function below to equally distribute a value dz through a matrix of dimension shape.
+Argument:
+    dz: input scalar
+    shape: the shape (n_H, n_W) of the output matrix for which we want to distribute the value of dz
+
+Returns:
+    a: Array of size (n_H, n_W) for which we distributed the value of dz
+"""
+
+def distribute_value(dz, shape):
+    # Retrieve dimensions from shape
+    (n_H, n_W) = shape
+
+    # Compute the value to distribute on the matrix
+    average = dz / (n_H * n_W)
+
+    # Create a matrix where every entry is the average value
+    a = np.full((n_H, n_W), average)
+
+    return a
+
+print("Exercise 7: Average Pooling - Backward Pass")
+print("==========")
+a = distribute_value(2, (2, 2))
+print('distributed value =', a)
+
+
+assert type(a) == np.ndarray, "Output must be a np.ndarray"
+assert a.shape == (2, 2), f"Wrong shape {a.shape} != (2, 2)"
+assert np.sum(a) == 2, "Values must sum to 2"
+
+a = distribute_value(100, (10, 10))
+assert type(a) == np.ndarray, "Output must be a np.ndarray"
+assert a.shape == (10, 10), f"Wrong shape {a.shape} != (10, 10)"
+assert np.sum(a) == 100, "Values must sum to 100"
+
+print("\033[92m All tests passed.")
+print("========================================")
