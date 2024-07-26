@@ -499,3 +499,110 @@ assert np.sum(a) == 100, "Values must sum to 100"
 
 print("\033[92m All tests passed.")
 print("========================================")
+
+"""
+Exercise 8: Pooling Backward
+Now, we have everything we need to compute backward propagation on a pooling layer.
+We will implement the pool_backward function in both modes ('max', and 'average') 
+
+We will implement the function below to equally distribute a value dz through a matrix of dimension shape.
+Argument:
+    dA: gradient of cost with respect to the output of the pooling layer, same shape as A
+    cache: cache output from the forward pass of the pooling layer, contains the layer's input and hparameters 
+    mode: the pooling mode you would like to use, defined as a string ("max" or "average")
+
+Returns:
+    dA: gradient of cost with respect to the output of the pooling layer, same shape as A
+    cache: cache output from the forward pass of the pooling layer, contains the layer's input and hparameters 
+    mode: the pooling mode you would like to use, defined as a string ("max" or "average")
+"""
+
+def pool_backward(dA, cache, mode = "max"):
+    # Retrieve information from cache
+    (A_prev, hparameters) = cache
+
+    # Retrieve hyperparameters from "hparameters" (≈2 lines)
+    stride = hparameters['stride']
+    f = hparameters['f']
+
+    # Retrieve dimensions from A_prev's shape and dA's shape (≈2 lines)
+    m, n_H_prev, n_W_prev, n_C_prev = A_prev.shape
+    m, n_H, n_W, n_C = dA.shape
+
+    # Initialize dA_prev with zeros (≈1 line)
+    dA_prev = np.zeros(A_prev.shape)
+
+    # Loop over the training examples
+    for i in range(m):
+        # Select training example from A_prev
+        a_prev = A_prev[i]
+
+        # Loop on the vertical axis
+        for h in range(n_H):
+            # Loop on the horizontal axis
+            for w in range(n_W):
+                # Loop over the channels
+                for c in range(n_C):
+                    # Find the corners of the current "slice"
+                    vert_start = h * stride
+                    vert_end = vert_start + f
+                    horiz_start = w * stride
+                    horiz_end = horiz_start + f
+
+                    # Compute the backward propagation in both modes.
+                    if mode == "max":
+                        # Use the corners and "c" to define the current slice from a_prev
+                        a_prev_slice = a_prev[vert_start:vert_end, horiz_start:horiz_end, c]
+
+                        # Create the mask from a_prev_slice (≈1 line)
+                        mask = create_mask_from_window(a_prev_slice)
+
+                        # Set dA_prev to be dA_prev + (the mask multiplied by the correct entry of dA)
+                        dA_prev[i, vert_start: vert_end, horiz_start: horiz_end, c] += mask * dA[i, h, w, c]
+                    elif mode == "average":
+                        # Get the value da from dA
+                        da = dA[i, h, w, c]
+
+                        # Define the shape of the filter as f*f
+                        shape = (f, f)
+
+                        # Distribute it to get the correct slice of dA_prev. i.e. Add the distributed value of da. (≈1 line)
+                        dA_prev[i, vert_start: vert_end, horiz_start: horiz_end, c] += distribute_value(da, shape)
+
+    assert (dA_prev.shape == A_prev.shape)
+    return dA_prev
+
+
+print("Exercise 8: Putting it Together - Pooling Backward")
+print("==========")
+np.random.seed(1)
+A_prev = np.random.randn(5, 5, 3, 2)
+hparameters = {"stride" : 1, "f": 2}
+A, cache = pool_forward(A_prev, hparameters)
+print(A.shape)
+print(cache[0].shape)
+dA = np.random.randn(5, 4, 2, 2)
+
+dA_prev1 = pool_backward(dA, cache, mode = "max")
+print("mode = max")
+print('mean of dA = ', np.mean(dA))
+print('dA_prev1[1,1] = ', dA_prev1[1, 1])
+print()
+dA_prev2 = pool_backward(dA, cache, mode = "average")
+print("mode = average")
+print('mean of dA = ', np.mean(dA))
+print('dA_prev2[1,1] = ', dA_prev2[1, 1])
+
+assert type(dA_prev1) == np.ndarray, "Wrong type"
+assert dA_prev1.shape == (5, 5, 3, 2), f"Wrong shape {dA_prev1.shape} != (5, 5, 3, 2)"
+assert np.allclose(dA_prev1[1, 1], [[0, 0],
+                                    [ 5.05844394, -1.68282702],
+                                    [ 0, 0]]), "Wrong values for mode max"
+assert np.allclose(dA_prev2[1, 1], [[0.08485462,  0.2787552],
+                                    [1.26461098, -0.25749373],
+                                    [1.17975636, -0.53624893]]), "Wrong values for mode average"
+print("\033[92m All tests passed.")
+print("========================================")
+
+
+
