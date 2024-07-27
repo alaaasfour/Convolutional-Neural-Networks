@@ -145,4 +145,83 @@ print ("X_test shape: " + str(X_test.shape))
 print ("Y_test shape: " + str(Y_test.shape))
 print("========================================")
 
+"""
+Exercise 4: Forward Propagation - Convolutional Model
+We will implement the convolutional_model function below to build the following model: 
+CONV2D -> RELU -> MAXPOOL -> CONV2D -> RELU -> MAXPOOL -> FLATTEN -> DENSE.
 
+Arguments:
+    input_img: input dataset, of shape (input_shape)
+
+Returns:
+    model: TF Keras model (object containing the information for the entire training process) 
+"""
+
+def convolutional_model(input_shape):
+    input_img = tf.keras.Input(shape = input_shape)
+
+    # CONV2D: 8 filters 4x4, stride of 1, padding 'SAME'
+    Z1 = tfl.Conv2D(filters = 8, kernel_size = (4, 4), strides = (1, 1), padding = 'same')(input_img)
+
+    # RELU
+    A1 = tfl.ReLU()(Z1)
+
+    # MAXPOOL: window 8x8, stride of 8, padding 'SAME'
+    P1 = tfl.MaxPooling2D(pool_size = (8, 8), strides = (8, 8), padding = 'same')(A1)
+
+    # CONV2D: 16 filters 2x2, stride 1, padding 'SAME'
+    Z2 = tfl.Conv2D(filters = 16, kernel_size = (2, 2), strides = (1, 1), padding = 'same')(P1)
+
+    # RELU
+    A2 = tfl.ReLU()(Z2)
+
+    # MAXPOOL: window 4x4, stride of 4, padding 'SAME'
+    P2 = tfl.MaxPooling2D(pool_size = (4, 4), strides = (4, 4), padding = 'same')(A2)
+
+    # Flatten
+    F = tfl.Flatten()(P2)
+
+    # Dense layer: 6 neurons in output layer.
+    outputs = tfl.Dense(units = 6, activation = 'softmax')(F)
+
+    model = tf.keras.Model(inputs = input_img, outputs = outputs)
+    return model
+
+
+print("Exercise 4: Forward Propagation - Convolutional Model")
+print("==========")
+conv_model = convolutional_model((64, 64, 3))
+conv_model.compile(optimizer='adam',
+                   loss='categorical_crossentropy',
+                   metrics=['accuracy'])
+conv_model.summary()
+
+output = [['InputLayer', [(None, 64, 64, 3)], 0],
+          ['Conv2D', (None, 64, 64, 8), 392, 'same', 'linear', 'GlorotUniform'],
+          ['ReLU', (None, 64, 64, 8), 0],
+          ['MaxPooling2D', (None, 8, 8, 8), 0, (8, 8), (8, 8), 'same'],
+          ['Conv2D', (None, 8, 8, 16), 528, 'same', 'linear', 'GlorotUniform'],
+          ['ReLU', (None, 8, 8, 16), 0],
+          ['MaxPooling2D', (None, 2, 2, 16), 0, (4, 4), (4, 4), 'same'],
+          ['Flatten', (None, 64), 0],
+          ['Dense', (None, 6), 390, 'softmax']]
+
+# comparator(summary(conv_model), output)
+
+# Both the Sequential and Functional APIs return a TF Keras model object. The only difference is how inputs are handled inside the object model!
+train_dataset = tf.data.Dataset.from_tensor_slices((X_train, Y_train)).batch(64)
+test_dataset = tf.data.Dataset.from_tensor_slices((X_test, Y_test)).batch(64)
+history = conv_model.fit(train_dataset, epochs=10, validation_data=test_dataset)
+# Now we will visualize the loss over time using history.history:
+# The history.history["loss"] entry is a dictionary with as many values as epochs that the
+# model was trained on.
+history.history
+df_loss_acc = pd.DataFrame(history.history)
+df_loss= df_loss_acc[['loss','val_loss']].copy()
+df_loss.rename(columns={'loss':'train','val_loss':'validation'},inplace=True)
+df_acc= df_loss_acc[['accuracy','val_accuracy']].copy()
+df_acc.rename(columns={'accuracy':'train','val_accuracy':'validation'},inplace=True)
+df_loss.plot(title='Model loss',figsize=(12,8)).set(xlabel='Epoch',ylabel='Loss')
+df_acc.plot(title='Model Accuracy',figsize=(12,8)).set(xlabel='Epoch',ylabel='Accuracy')
+plt.show()
+print("========================================")
