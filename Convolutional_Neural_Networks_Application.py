@@ -82,14 +82,67 @@ def happyModel():
 print("Exercise 2: Creating the sequential model / happyModel")
 print("==========")
 happy_model = happyModel()
-# Print a summary for each layer
+
+"""
+Now that our model is created, we can compile it for training with an optimizer and loss of our choice. 
+When the string accuracy is specified as a metric, the type of accuracy used will be automatically converted based on the loss function used. 
+This is one of the many optimizations built into TensorFlow that make our life easier!
+"""
 happy_model.compile(optimizer='adam',
                    loss='binary_crossentropy',
                    metrics=['accuracy'])
 
+"""
+It's time to check the model's parameters with the .summary() method. This will display the types of layers we have, 
+the shape of the outputs, and how many parameters are in each layer.
+"""
 happy_model.summary()
+
+"""
+Train and Evaluate the Model:
+After creating the model, compiling it with our choice of optimizer and loss function, and doing a sanity check on its contents, 
+we are now ready to build! We Simply call .fit() to train.
+"""
 happy_model.fit(X_train, Y_train, epochs=10, batch_size=16)
+
+"""
+After that completes, we just use .evaluate() to evaluate against our test set. This function will print the value of the 
+loss function and the performance metrics specified during the compilation of the model. 
+In this case, the binary_crossentropy and the accuracy respectively.
+"""
 happy_model.evaluate(X_test, Y_test)
+print("========================================")
+
+
+"""
+Exercise 3: The functional API
+The Functional API can handle models with non-linear topology, shared layers, as well as layers with multiple inputs or outputs. 
+Imagine that, where the Sequential API requires the model to move in a linear fashion through its layers, the Functional API 
+allows much more flexibility. Where Sequential is a straight line, a Functional model is a graph, where the nodes of the 
+layers can connect in many more ways than one.
+"""
+# Load the signs dataset
+X_train_orig, Y_train_orig, X_test_orig, Y_test_orig, classes = load_signs_dataset()
+
+print("Exercise 3: The functional API & Dataset")
+print("==========")
+# Example of an image from the dataset
+index = 9
+plt.imshow(X_train_orig[index])
+plt.show()
+print ("y = " + str(np.squeeze(Y_train_orig[:, index])))
+
+# Split the dataa into Train/Test sets
+X_train = X_train_orig/255.
+X_test = X_test_orig/255.
+Y_train = convert_to_one_hot(Y_train_orig, 6).T
+Y_test = convert_to_one_hot(Y_test_orig, 6).T
+print ("number of training examples = " + str(X_train.shape[0]))
+print ("number of test examples = " + str(X_test.shape[0]))
+print ("X_train shape: " + str(X_train.shape))
+print ("Y_train shape: " + str(Y_train.shape))
+print ("X_test shape: " + str(X_test.shape))
+print ("Y_test shape: " + str(Y_test.shape))
 print("========================================")
 
 
