@@ -206,7 +206,6 @@ output = [['InputLayer', [(None, 64, 64, 3)], 0],
           ['Flatten', (None, 64), 0],
           ['Dense', (None, 6), 390, 'softmax']]
 
-# comparator(summary(conv_model), output)
 
 # Both the Sequential and Functional APIs return a TF Keras model object. The only difference is how inputs are handled inside the object model!
 train_dataset = tf.data.Dataset.from_tensor_slices((X_train, Y_train)).batch(64)
