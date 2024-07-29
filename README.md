@@ -60,7 +60,7 @@ Make sure you have Python 3.10+ installed on your machine. In addition to the fo
    - Flatten
    - Dense
 
-## Functions Implemented & Features 🏃🏻‍♂️
+## How to Run 🏃🏻‍♂️
 1. Ensure all dependencies are installed.
 2. Place the dataset files in the appropriate directory.
 3. Run the script: `python Convolutional_Neural_Networks_Application.py`
