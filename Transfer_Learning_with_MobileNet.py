@@ -100,3 +100,20 @@ for image, _ in train_dataset.take(1):
 
 preprocess_input = tf.keras.applications.mobilenet_v2.preprocess_input
 print("========================================")
+
+"""
+Exercise 2: Using MobileNetV2 for Transfer Learning
+
+MobileNetV2 was trained on ImageNet and is optimized to run on mobile and other low-power applications.
+Let's try to train the base model using all the layers from the pretrained model.
+Similarly to how we reused the pretrained normalization values MobileNetV2 was trained on, we'll also load the pretrained weights from ImageNet.
+"""
+print("Exercise 2: Printing the Model Summary")
+print("==========")
+IMG_SHAPE = IMG_SIZE + (3,)
+base_model_path="imagenet_base_model/with_top_mobilenet_v2_weights_tf_dim_ordering_tf_kernels_1.0_160.h5"
+base_model = tf.keras.applications.MobileNetV2(input_shape=IMG_SHAPE,
+                                               include_top=True,
+                                               weights=base_model_path)
+base_model.summary()
+print("========================================")
