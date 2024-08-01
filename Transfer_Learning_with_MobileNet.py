@@ -116,4 +116,17 @@ base_model = tf.keras.applications.MobileNetV2(input_shape=IMG_SHAPE,
                                                include_top=True,
                                                weights=base_model_path)
 base_model.summary()
+
+# Note the last 2 layers here. They are the so-called top layers, and they are responsible for the classification in the model
+nb_layers = len(base_model.layers)
+print(base_model.layers[nb_layers - 2].name)
+print(base_model.layers[nb_layers - 1].name)
+
+# Next, choose the first batch from the tensorflow dataset to use the images, and run it through the MobileNetV2 base model to test out the predictions on some of your images.
+image_batch, label_batch = next(iter(train_dataset))
+feature_batch = base_model(image_batch)
+print(feature_batch.shape)
+
+#Shows the different label probabilities in one tensor
+print(label_batch)
 print("========================================")
