@@ -127,6 +127,36 @@ image_batch, label_batch = next(iter(train_dataset))
 feature_batch = base_model(image_batch)
 print(feature_batch.shape)
 
-#Shows the different label probabilities in one tensor
+# Shows the different label probabilities in one tensor
 print(label_batch)
+
+
+"""
+Now decode the predictions made by the model. Earlier, when we printed the shape of the batch, it would have returned (32, 1000). 
+The number 32 refers to the batch size and 1000 refers to the 1000 classes the model was pretrained on. 
+The predictions returned by the base model below follow this format:
+First the class number, then a human-readable label, and last the probability of the image belonging to that class. 
+We'll notice that there are two of these returned for each image in the batch - these the top two probabilities returned for that image.
+"""
+base_model.trainable = False
+image_var = tf.Variable(preprocess_input(image_batch))
+pred = base_model(image_var)
+
+# Function to decode predictions
+def decode_predictions(preds, top=2):
+    results = []
+    for pred in preds:
+        top_indices = pred.argsort()[-top:][::-1]
+        result = [tuple(class_index[str(i)]) + (pred[i],) for i in top_indices]
+        results.append(result)
+
+    return results
+
+with open("imagenet_base_model/imagenet_class_index.json", 'r') as f:
+    class_index = json.load(f)
+
+decoded_predictions = decode_predictions(pred.numpy(), top=2)
+print(decoded_predictions)
 print("========================================")
+
+
