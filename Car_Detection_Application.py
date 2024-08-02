@@ -24,6 +24,7 @@ import pandas as pd
 import PIL
 from PIL import ImageFont, ImageDraw, Image
 import tensorflow as tf
+from tensorflow.keras import backend as K
 
 #from tensorflow.keras.models import load_model
 #from yad2k.models.keras_yolo import yolo_head
@@ -251,3 +252,98 @@ assert np.isclose(classes[2].numpy(), 1.7079165), "Wrong value on classes"
 
 print("\033[92m All tests passed!")
 print("========================================")
+
+"""
+Exercise 4: Wrapping Up the Filtering
+Now, It's time to implement a function taking the output of the deep CNN (the 19x19x5x85 dimensional encoding) and filtering 
+through all the boxes using the functions you've just implemented.
+
+Let's implement yolo_eval() which takes the output of the YOLO encoding and filters the boxes using score threshold and NMS.
+Converts the output of YOLO encoding (a lot of boxes) to your predicted boxes along with their scores, box coordinates and classes.
+
+Arguments:
+    yolo_outputs: output of the encoding model (for image_shape of (608, 608, 3)), contains 4 tensors:
+                    box_xy: tensor of shape (None, 19, 19, 5, 2)
+                    box_wh: tensor of shape (None, 19, 19, 5, 2)
+                    box_confidence: tensor of shape (None, 19, 19, 5, 1)
+                    box_class_probs: tensor of shape (None, 19, 19, 5, 80)
+    image_shape: tensor of shape (2,) containing the input shape, in this notebook we use (608., 608.) (has to be float32 dtype)
+    max_boxes: integer, maximum number of predicted boxes you'd like
+    score_threshold: real value, if [ highest class probability score < threshold], then get rid of the corresponding box
+    iou_threshold: real value, "intersection over union" threshold used for NMS filtering
+    
+Returns:
+    scores: tensor of shape (None, ), predicted score for each box
+    boxes: tensor of shape (None, 4), predicted box coordinates
+    classes: tensor of shape (None,), predicted class for each box
+"""
+
+def yolo_boxes_to_corners(box_xy, box_wh):
+    # Convert YOLO box predictions to bounding box corners.
+    box_mins = box_xy - (box_wh / 2.0)
+    box_maxes = box_xy + (box_wh / 2.0)
+
+    return tf.keras.backend.concatenate([
+        box_mins[..., 1:2],  # y_min
+        box_mins[..., 0:1],  # x_min
+        box_maxes[..., 1:2],  # y_max
+        box_maxes[..., 0:1]  # x_max
+    ])
+
+def scale_boxes(boxes, image_shape):
+    """ Scales the predicted boxes in order to be drawable on the image"""
+    height = float(image_shape[0])
+    width = float(image_shape[1])
+    image_dims = K.stack([height, width, height, width])
+    image_dims = K.reshape(image_dims, [1, 4])
+    boxes = boxes * image_dims
+    return boxes
+
+def yolo_eval(yolo_outputs, image_shape = (720, 1280), max_boxes = 10, score_threshold = 0.6, iou_threshold = 0.5):
+    # Retrieve outputs of the YOLO model
+    box_xy, box_wh, box_confidence, box_class_probs = yolo_outputs
+
+    # Convert boxes to be ready for filtering functions (convert boxes box_xy and box_wh to corner coordinates)
+    boxes = yolo_boxes_to_corners(box_xy, box_wh)
+
+    # Perform score-filtering with a threshold of score_threshold
+    scores, boxes, classes = yolo_filter_boxes(boxes, box_confidence, box_class_probs, threshold = score_threshold)
+
+    # Scale boxes back to original image shape
+    boxes = scale_boxes(boxes, image_shape)
+
+    # Perform Non-max suppression with maximum number of boxes set to max_boxes and a threshold of iou_threshold
+    scores, boxes, classes = yolo_non_max_suppression(scores, boxes, classes, max_boxes = max_boxes, iou_threshold = iou_threshold)
+
+    return scores, boxes, classes
+
+print("Exercise 4: Wrapping Up the Filtering & Yolo Evaluation")
+print("==========")
+tf.random.set_seed(10)
+yolo_outputs = (tf.random.normal([19, 19, 5, 2], mean=1, stddev=4, seed=1),
+                tf.random.normal([19, 19, 5, 2], mean=1, stddev=4, seed=1),
+                tf.random.normal([19, 19, 5, 1], mean=1, stddev=4, seed=1),
+                tf.random.normal([19, 19, 5, 80], mean=1, stddev=4, seed=1))
+scores, boxes, classes = yolo_eval(yolo_outputs)
+print("scores[2] = " + str(scores[2].numpy()))
+print("boxes[2] = " + str(boxes[2].numpy()))
+print("classes[2] = " + str(classes[2].numpy()))
+print("scores.shape = " + str(scores.numpy().shape))
+print("boxes.shape = " + str(boxes.numpy().shape))
+print("classes.shape = " + str(classes.numpy().shape))
+
+assert isinstance(scores, tf.Tensor), "Use tensoflow functions"
+assert isinstance(boxes, tf.Tensor), "Use tensoflow functions"
+assert isinstance(classes, tf.Tensor), "Use tensoflow functions"
+
+assert scores.shape == (10,), "Wrong shape"
+assert boxes.shape == (10, 4), "Wrong shape"
+assert classes.shape == (10,), "Wrong shape"
+
+assert np.isclose(scores[2].numpy(), 171.60194), "Wrong value on scores"
+assert np.allclose(boxes[2].numpy(), [-1240.3483, -3212.5881, -645.78, 2024.3052]), "Wrong value on boxes"
+assert np.isclose(classes[2].numpy(), 16), "Wrong value on classes"
+
+print("\033[92m All tests passed!")
+print("========================================")
+
