@@ -21,7 +21,7 @@ Make sure you have Python 3.10+ installed on your machine. In addition to the fo
 7. Create Mask from Window: Creates a mask matrix for max-pooling.
 8. Distribute Value: Distributes the gradient for average pooling.
 
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
 
 # Convolutional Neural Network (CNN) Implementation using TensorFlow Keras Functional API 🪄
 
@@ -65,7 +65,7 @@ Make sure you have Python 3.10+ installed on your machine. In addition to the fo
 3. Run the script: `python Convolutional_Neural_Networks_Application.py`
 4. The script will load the datasets, create the models, train them, and display the training history.
 
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
 
 # Alpaca/Not Alpaca Classifier using Transfer Learning 🦙🔎
 
@@ -87,15 +87,15 @@ Make sure you have Python 3.10+ installed on your machine. In addition to the fo
 ## Dataset 💾
 ### The dataset should be organized in a directory structure as follows:
 
-datasets/
-    alpaca/
-        alpaca1.jpg
-        alpaca2.jpg
-        ...
-    not_alpaca/
-        not_alpaca1.jpg
-        not_alpaca2.jpg
-        ...
+datasets/  
+├── alpaca/  
+│ ├── alpaca1.jpg  
+│ ├── alpaca2.  
+│ └── ...  
+└── not_alpaca/  
+├── not_alpaca1.jpg  
+├── not_alpaca2.jpg  
+└── ...  
 
 ## Training & Key Steps 🏋️‍♀️🔑
 ### The training process involves several key steps:
@@ -119,3 +119,6 @@ datasets/
 
 4. Training and Validation Accuracy (After Fine-Tuning)
 ![Data Accuracy After FT.png](Data%20Accuracy%20After%20FT.png)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
