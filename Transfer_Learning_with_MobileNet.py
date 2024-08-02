@@ -266,3 +266,55 @@ plt.title('Training and Validation Loss')
 plt.xlabel('epoch')
 plt.show()
 print("========================================")
+
+"""
+Exercise 4: Fine-tuning the model
+
+We could try fine-tuning the model by re-running the optimizer in the last layers to improve accuracy. 
+When we use a smaller learning rate, we take smaller steps to adapt it a little more closely to the new data. 
+In transfer learning, the way we achieve this is by unfreezing the layers at the end of the network, and then re-training 
+the model on the final layers with a very low learning rate. 
+Adapting our learning rate to go over these layers in smaller steps can yield more fine details - and higher accuracy.
+
+"""
+base_model = model2.layers[4]
+base_model.trainable = True
+
+# Let's take a look to see how many layers are in the base model
+# print("Number of layers in the base model: ", len(base_model.layers))
+
+# Fine-tuning from this layer onwards
+fine_tune_at = 120
+
+# Freeze all the layers before the `fine_tune_at` layer
+
+
+fine_tune_epochs = 5
+total_epochs =  initial_epochs + fine_tune_epochs
+
+history_fine = model2.fit(train_dataset, epochs=total_epochs, initial_epoch=history.epoch[-1], validation_data=validation_dataset)
+acc += history_fine.history['accuracy']
+val_acc += history_fine.history['val_accuracy']
+
+loss += history_fine.history['loss']
+val_loss += history_fine.history['val_loss']
+plt.figure(figsize=(8, 8))
+plt.subplot(2, 1, 1)
+plt.plot(acc, label='Training Accuracy')
+plt.plot(val_acc, label='Validation Accuracy')
+plt.ylim([0, 1])
+plt.plot([initial_epochs-1,initial_epochs-1],
+          plt.ylim(), label='Start Fine Tuning')
+plt.legend(loc='lower right')
+plt.title('Training and Validation Accuracy')
+
+plt.subplot(2, 1, 2)
+plt.plot(loss, label='Training Loss')
+plt.plot(val_loss, label='Validation Loss')
+plt.ylim([0, 1.0])
+plt.plot([initial_epochs-1,initial_epochs-1],
+         plt.ylim(), label='Start Fine Tuning')
+plt.legend(loc='upper right')
+plt.title('Training and Validation Loss')
+plt.xlabel('epoch')
+plt.show()
