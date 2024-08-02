@@ -231,4 +231,38 @@ comparator(summary2(model2), alpaca_summary)
 for layer in summary2(model2):
     print(layer)
 
+print("Printing the accuracy, loss for the training sets")
+base_learning_rate = 0.001
+model2.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=base_learning_rate),
+              loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
+              metrics=['accuracy'])
+initial_epochs = 5
+history = model2.fit(train_dataset, validation_data=validation_dataset, epochs=initial_epochs)
+
+# Plot the training and validation accuracy:
+print("Plotting the training and validation accuracy")
+acc = [0.] + history.history['accuracy']
+val_acc = [0.] + history.history['val_accuracy']
+
+loss = history.history['loss']
+val_loss = history.history['val_loss']
+
+plt.figure(figsize=(8, 8))
+plt.subplot(2, 1, 1)
+plt.plot(acc, label='Training Accuracy')
+plt.plot(val_acc, label='Validation Accuracy')
+plt.legend(loc='lower right')
+plt.ylabel('Accuracy')
+plt.ylim([min(plt.ylim()),1])
+plt.title('Training and Validation Accuracy')
+
+plt.subplot(2, 1, 2)
+plt.plot(loss, label='Training Loss')
+plt.plot(val_loss, label='Validation Loss')
+plt.legend(loc='upper right')
+plt.ylabel('Cross Entropy')
+plt.ylim([0,1.0])
+plt.title('Training and Validation Loss')
+plt.xlabel('epoch')
+plt.show()
 print("========================================")
