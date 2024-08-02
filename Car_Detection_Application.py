@@ -107,7 +107,6 @@ assert classes[2].numpy() == 8, "Values are wrong on classes"
 print("\033[92m All tests passed!")
 print("========================================")
 
-
 """
 Exercise 2: IOU (Intersection over Union) Calculation
 Now, we will implement the intersection over union (IoU) between box1 and box2
@@ -131,7 +130,6 @@ To find the intersection of the two boxes  (𝑥𝑖1,𝑦𝑖1,𝑥𝑖2,𝑦�
 Argument:
     box1: first box, list object with coordinates (box1_x1, box1_y1, box1_x2, box_1_y2)
     box2: second box, list object with coordinates (box2_x1, box2_y1, box2_x2, box2_y2)
-
 """
 
 def iou(box1, box2):
@@ -184,6 +182,72 @@ box1 = (1,1,3,3)
 box2 = (2,3,3,4)
 print("iou for boxes that only touch at edges = " + str(iou(box1,box2)))
 assert iou(box1, box2) == 0, "Intersection at edges must be 0"
+
+print("\033[92m All tests passed!")
+print("========================================")
+
+"""
+Exercise 3: YOLO Non-max Suppression
+Now, we will implement the Non-max Suppression with these steps:
+1. Select the box that has the highest score.
+2. Compute the overlap of this box with all other boxes, and remove boxes that overlap significantly (iou >= iou_threshold).
+3. Go back to step 1 and iterate until there are no more boxes with a lower score than the currently selected box.
+
+This will remove all boxes that have a large overlap with the selected boxes. Only the "best" boxes remain.
+
+Argument:
+    scores: tensor of shape (None,), output of yolo_filter_boxes()
+    boxes: tensor of shape (None, 4), output of yolo_filter_boxes() that have been scaled to the image size (see later)
+    classes: tensor of shape (None,), output of yolo_filter_boxes()
+    max_boxes: integer, maximum number of predicted boxes you'd like
+    iou_threshold: real value, "intersection over union" threshold used for NMS filtering
+
+Returns:
+    scores: tensor of shape (None, ), predicted score for each box
+    boxes: tensor of shape (None, 4), predicted box coordinates
+    classes: tensor of shape (None, ), predicted class for each box
+"""
+
+def yolo_non_max_suppression(scores, boxes, classes, max_boxes = 10, iou_threshold = 0.5):
+    max_boxes_tensor = tf.Variable(max_boxes, dtype='int32')
+
+    # Use tf.image.non_max_suppression() to get the list of indices corresponding to boxes we keep
+    nms_indices = tf.image.non_max_suppression(boxes, scores, max_boxes, iou_threshold)
+
+    # Use tf.gather() to select only nms_indices from scores, boxes and classes
+    scores = tf.gather(scores, nms_indices)
+    boxes = tf.gather(boxes, nms_indices)
+    classes = tf.gather(classes, nms_indices)
+
+    return scores, boxes, classes
+
+print("Exercise 3: YOLO Non-max Suppression")
+print("==========")
+tf.random.set_seed(10)
+scores = tf.random.normal([54,], mean=1, stddev=4, seed = 1)
+boxes = tf.random.normal([54, 4], mean=1, stddev=4, seed = 1)
+classes = tf.random.normal([54,], mean=1, stddev=4, seed = 1)
+scores, boxes, classes = yolo_non_max_suppression(scores, boxes, classes)
+
+assert isinstance(scores, tf.Tensor), "Use tensoflow functions"
+print("scores[2] = " + str(scores[2].numpy()))
+print("boxes[2] = " + str(boxes[2].numpy()))
+print("classes[2] = " + str(classes[2].numpy()))
+print("scores.shape = " + str(scores.numpy().shape))
+print("boxes.shape = " + str(boxes.numpy().shape))
+print("classes.shape = " + str(classes.numpy().shape))
+
+assert isinstance(scores, tf.Tensor), "Use tensoflow functions"
+assert isinstance(boxes, tf.Tensor), "Use tensoflow functions"
+assert isinstance(classes, tf.Tensor), "Use tensoflow functions"
+
+assert scores.shape == (10,), "Wrong shape"
+assert boxes.shape == (10, 4), "Wrong shape"
+assert classes.shape == (10,), "Wrong shape"
+
+assert np.isclose(scores[2].numpy(), 8.147684), "Wrong value on scores"
+assert np.allclose(boxes[2].numpy(), [ 6.0797963, 3.743308, 1.3914018, -0.34089637]), "Wrong value on boxes"
+assert np.isclose(classes[2].numpy(), 1.7079165), "Wrong value on classes"
 
 print("\033[92m All tests passed!")
 print("========================================")
