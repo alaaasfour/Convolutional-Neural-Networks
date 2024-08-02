@@ -12,6 +12,7 @@ import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import tensorflow.keras.layers as tfl
+from test_utils import summary2, comparator
 from keras.src.layers import RandomFlip, RandomRotation
 from keras.src.utils import image_dataset_from_directory
 from tensorflow.keras.preprocessing import *
@@ -157,6 +158,77 @@ with open("imagenet_base_model/imagenet_class_index.json", 'r') as f:
 
 decoded_predictions = decode_predictions(pred.numpy(), top=2)
 print(decoded_predictions)
+
 print("========================================")
 
+"""
+Exercise 3: Layer Freezing with the Functional API
 
+Now, we'll see how we can use a pretrained model to modify the classifier task so that it's able to recognize alpacas. 
+We can achieve this in three steps:
+    1. Delete the top layer (the classification layer): Set `include_top` in `base_model` as False
+    2. Add a new classifier layer
+        - Train only one layer by freezing the rest of the network
+        - As mentioned before, a single neuron is enough to solve a binary classification problem.
+    3. Freeze the base model and train the newly-created classifier layer
+        - Set base `model.trainable=False` to avoid changing the weights and train only the new layer
+        - Set training in `base_model` to False to avoid keeping track of statistics in the batch norm layer
+        
+Arguments:
+    image_shape: Image width and height
+    data_augmentation: data augmentation function
+    
+Returns:
+    tf.keras.model
+"""
+def alpaca_model(image_shape=IMG_SIZE, data_augmentation=data_augmenter()):
+    input_shape = image_shape + (3,)
+    base_model_path_no = "imagenet_base_model/without_top_mobilenet_v2_weights_tf_dim_ordering_tf_kernels_1.0_160_no_top.h5"
+    base_model = tf.keras.applications.MobileNetV2(input_shape=input_shape, include_top=False, weights=base_model_path_no)
+
+    # Freeze the base model by making it non-trainable
+    base_model.trainable = False
+
+    # Create the input layer (Same as the imageNetV2 input size)
+    inputs = tf.keras.Input(shape=input_shape)
+
+    # Apply data augmentation to the inputs
+    x = data_augmentation(inputs)
+
+    # Data preprocessing using the same weights the model was trained on
+    x = preprocess_input(x)
+
+    # Set training to False to avoid keeping track of statistics in the batch norm layer
+    x = base_model(x, training=False)
+
+    # Add the new Binary classification layers
+    # Use global avg pooling to summarize the info in each channel
+    x = tfl.GlobalAveragePooling2D()(x)
+    # Include dropout with probability of 0.2 to avoid overfitting
+    x = tfl.Dropout(0.2)(x)
+
+    # Use a prediction layer with one neuron (as a binary classifier only needs one)
+    outputs = tfl.Dense(1, activation="linear")(x)
+    model = tf.keras.Model(inputs, outputs)
+
+    return model
+
+
+print("Exercise 3: Layer Freezing with the Functional API")
+print("==========")
+# Let's create new model using the data_augmentation function defined earlier
+model2 = alpaca_model(IMG_SIZE, data_augmentation)
+alpaca_summary = [['InputLayer', [(None, 160, 160, 3)], 0],
+                    ['Sequential', (None, 160, 160, 3), 0],
+                    ['TensorFlowOpLayer', [(None, 160, 160, 3)], 0],
+                    ['TensorFlowOpLayer', [(None, 160, 160, 3)], 0],
+                    ['Functional', (None, 5, 5, 1280), 2257984],
+                    ['GlobalAveragePooling2D', (None, 1280), 0],
+                    ['Dropout', (None, 1280), 0, 0.2],
+                    ['Dense', (None, 1), 1281, 'linear']] #linear is the default activation
+
+comparator(summary2(model2), alpaca_summary)
+for layer in summary2(model2):
+    print(layer)
+
+print("========================================")

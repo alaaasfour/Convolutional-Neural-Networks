@@ -9,6 +9,7 @@ from tensorflow.keras.layers import Conv2DTranspose
 from tensorflow.keras.layers import concatenate
 from tensorflow.keras.layers import ZeroPadding2D
 from tensorflow.keras.layers import Dense
+import tensorflow as tf
 
 
 # Compare the two inputs
@@ -190,6 +191,27 @@ def multiple_test(test_cases, target):
         print('\033[92m', success," Tests passed")
         print('\033[91m', len(test_cases) - success, " Tests failed")
         raise AssertionError("Not all tests were passed for {}. Check your equations and avoid using global variables inside the function.".format(target.__name__))
-        
-        
-        
+
+def summary2(model):
+    model.compile(optimizer='adam',
+                  loss='categorical_crossentropy',
+                  metrics=['accuracy'])
+    result = []
+    for layer in model.layers:
+        if hasattr(layer, 'output_shape'):
+            output_shape = layer.output_shape
+        else:
+            output_shape = layer.output.shape
+        descriptors = [layer.__class__.__name__, output_shape, layer.count_params()]
+        if isinstance(layer, tf.keras.layers.Conv2D):
+            descriptors.extend([layer.padding, layer.activation.__name__, layer.kernel_initializer.__class__.__name__])
+        elif isinstance(layer, tf.keras.layers.MaxPooling2D):
+            descriptors.extend([layer.pool_size, layer.strides, layer.padding])
+        elif isinstance(layer, tf.keras.layers.Dropout):
+            descriptors.append(layer.rate)
+        elif isinstance(layer, tf.keras.layers.ZeroPadding2D):
+            descriptors.append(layer.padding)
+        elif isinstance(layer, tf.keras.layers.Dense):
+            descriptors.append(layer.activation.__name__)
+        result.append(descriptors)
+    return result
