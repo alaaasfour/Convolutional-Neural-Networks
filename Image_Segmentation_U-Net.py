@@ -190,25 +190,12 @@ Returns:
 """
 
 def upsampling_block(expansive_input, contractive_input, n_filters=32):
-    up = Conv2DTranspose(
-        n_filters,  # number of filters
-        (3, 3),  # Kernel size
-        strides=(2, 2),
-        padding='same')(expansive_input)
+    up = Conv2DTranspose(n_filters, (3, 3), strides=(2, 2), padding='same')(expansive_input)
 
     # Merge the previous output and the contractive_input
     merge = concatenate([up, contractive_input], axis=3)
-    conv = Conv2D(n_filters,  # Number of filters
-                  3,  # Kernel size
-                  activation='relu',
-                  padding='same',
-                  kernel_initializer='he_normal')(merge)
-    conv = Conv2D(n_filters,  # Number of filters
-                  3,  # Kernel size
-                  activation='relu',
-                  padding='same',
-                  # set 'kernel_initializer' same as above
-                  kernel_initializer='he_normal')(conv)
+    conv = Conv2D(n_filters, 3, activation='relu', padding='same', kernel_initializer='he_normal')(merge)
+    conv = Conv2D(n_filters, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv)
 
     return conv
 
@@ -234,4 +221,81 @@ for layer in summaryUNet(model1):
     print(layer)
 
 comparatorUNet(summaryUNet(model1), output1)
+print("========================================")
+
+"""
+Exercise 3: Building the Model
+Now, this is where we'll put it all together, by chaining the encoder, bottleneck, and decoder! We'll need to specify 
+the number of output channels, which for this particular set would be 23. 
+That's because there are 23 possible labels for each pixel in this self-driving car dataset.
+
+Let's implement unet_model() function by following the steps:
+For the function, specify the input shape, number of filters, and number of classes (23 in this case).
+For the first half of the model:
+    1. Begin with a conv block that takes the inputs of the model and the number of filters
+    2. Then, chain the first output element of each block to the input of the next convolutional block
+    3 Next, double the number of filters at each step
+    4. Beginning with `conv_block4`, add `dropout_prob` of 0.3
+    5. For the final conv_block, set `dropout_prob` to 0.3 again, and turn off max pooling
+    
+For the second half of the model:
+    1. Use cblock5 as expansive_input and cblock4 as contractive_input, with `n_filters` * 8. This is your bottleneck layer.
+    2. Chain the output of the previous block as expansive_input and the corresponding contractive block output.
+    3. Note that you must use the second element of the contractive block before the max pooling layer.
+    4. At each step, use half the number of filters of the previous block
+    5. `conv9` is a Conv2D layer with ReLU activation, He normal initializer, same padding
+    6. Finally, `conv10` is a Conv2D that takes the number of classes as the filter, a kernel size of 1, and "same" padding. The output of `conv10` is the output of your model.
+
+Argument:
+    input_size -- Input shape 
+    n_filters -- Number of filters for the convolutional layers
+    n_classes -- Number of output classes
+
+Returns:
+    model -- tf.keras.Model
+"""
+
+def unet_model(input_size=(96, 128, 3), n_filters=32, n_classes=23):
+    inputs = Input(input_size)
+
+    # Contracting Path (encoding)
+    # Add a conv_block with the inputs of the unet_ model and n_filters
+    cblock1 = conv_block(inputs, n_filters)
+
+    # Chain the first element of the output of each block to be the input of the next conv_block.
+    # Double the number of filters at each new step
+    cblock2 = conv_block(cblock1[0], n_filters * 2)
+    cblock3 = conv_block(cblock2[0], n_filters * 4)
+    cblock4 = conv_block(cblock3[0], n_filters * 8, dropout_prob = 0.3)
+    cblock5 = conv_block(cblock4[0], n_filters * 16, dropout_prob = 0.3, max_pooling = False)
+
+    # Expanding Path (decoding)
+    # Add the first upsampling_block.
+    # Use the cblock5[0] as expansive_input and cblock4[1] as contractive_input and n_filters * 8
+    ublock6 = upsampling_block(cblock5[0], cblock4[1], n_filters * 8)
+
+    # Chain the output of the previous block as expansive_input and the corresponding contractive block output.
+    # We must use the second element of the contractive block i.e before the maxpooling layer.
+    # At each step, we use half the number of filters of the previous block
+    ublock7 = upsampling_block(ublock6, cblock3[1], n_filters * 4)
+    ublock8 = upsampling_block(ublock7, cblock2[1], n_filters * 2)
+    ublock9 = upsampling_block(ublock8, cblock1[1], n_filters)
+
+    conv9 = Conv2D(n_filters, 3, activation='relu', padding='same', kernel_initializer='he_normal')(ublock9)
+
+    # Add a Conv2D layer with n_classes filter, kernel size of 1 and a 'same' padding
+    conv10 = Conv2D(n_classes, 1, padding='same')(conv9)
+    model = tf.keras.Model(inputs=inputs, outputs=conv10)
+
+    return model
+
+print("Exercise 3: Building the U-Net Model")
+print("==========")
+import outputsUnet
+img_height = 96
+img_width = 128
+num_channels = 3
+
+unet = unet_model((img_height, img_width, num_channels))
+comparatorUNet(summaryUNet(unet), outputsUnet.unet_model_output)
 print("========================================")
