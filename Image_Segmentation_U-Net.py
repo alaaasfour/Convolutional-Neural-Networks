@@ -307,3 +307,44 @@ num_channels = 3
 
 unet = unet_model((img_height, img_width, num_channels))
 unet.summary()
+
+
+"""
+Loss Function
+
+In semantic segmentation, we need as many masks as we have object classes. In the dataset we're using, each pixel in 
+every mask has been assigned a single integer probability that it belongs to a certain class, from 0 to num_classes-1. 
+The correct class is the layer with the higher probability.
+
+"""
+unet.compile(optimizer='adam', loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), metrics=['accuracy'])
+
+
+"""
+Dataset Handling
+
+Below, we define a function that allows us to display both an input image, and its ground truth: the true mask. 
+The true mask is what the trained model output is aiming to get as close to as possible.
+"""
+def display(display_list):
+    plt.figure(figsize=(15, 15))
+
+    title = ['Input Image', 'True Mask', 'Predicted Mask']
+
+    for i in range(len(display_list)):
+        plt.subplot(1, len(display_list), i+1)
+        plt.title(title[i])
+        plt.imshow(tf.keras.preprocessing.image.array_to_img(display_list[i]))
+        plt.axis('off')
+    plt.show()
+
+for image, mask in image_ds.take(1):
+    sample_image, sample_mask = image, mask
+    print(mask.shape)
+display([sample_image, sample_mask])
+
+for image, mask in processed_image_ds.take(1):
+    sample_image, sample_mask = image, mask
+    print(mask.shape)
+display([sample_image, sample_mask])
+
