@@ -163,3 +163,75 @@ for layer in summaryUNet(model2):
 
 comparatorUNet(summaryUNet(model2), output2)
 print("========================================")
+
+"""
+Exercise 2: Decoder (Upsampling Block)
+The decoder, or upsampling block, upsamples the features back to the original image size. At each upsampling level, we'll 
+take the output of the corresponding encoder block and concatenate it before feeding to the next decoder block.
+
+There are two new components in the decoder: `up` and `merge`. These are the transpose convolution and the skip connections. 
+In addition, there are two more convolutional layers set to the same parameters as in the encoder. 
+
+We'll implement the upsampling_block() function by following the following steps:
+    1. Takes the arguments `expansive_input` (which is the input tensor from the previous layer) and `contractive_input` (the input tensor from the previous skip layer)
+    2. The number of filters here is the same as in the downsampling block you completed previously
+    3. The `Conv2DTranspose` layer will take `n_filters` with shape (3,3) and a stride of (2,2), with padding set to same. 
+    It's applied to `expansive_input`, or the input tensor from the previous layer.
+    4. Concatenate the Conv2DTranspose layer output to the contractive input, with an axis of 3. 
+    In general, we can concatenate the tensors in the order that we prefer.
+
+Argument:
+    expansive_input: Input tensor from previous layer
+    contractive_input: Input tensor from previous skip layer
+    n_filters: Number of filters for the convolutional layers
+
+Returns:
+    conv: Tensor output
+"""
+
+def upsampling_block(expansive_input, contractive_input, n_filters=32):
+    up = Conv2DTranspose(
+        n_filters,  # number of filters
+        (3, 3),  # Kernel size
+        strides=(2, 2),
+        padding='same')(expansive_input)
+
+    # Merge the previous output and the contractive_input
+    merge = concatenate([up, contractive_input], axis=3)
+    conv = Conv2D(n_filters,  # Number of filters
+                  3,  # Kernel size
+                  activation='relu',
+                  padding='same',
+                  kernel_initializer='he_normal')(merge)
+    conv = Conv2D(n_filters,  # Number of filters
+                  3,  # Kernel size
+                  activation='relu',
+                  padding='same',
+                  # set 'kernel_initializer' same as above
+                  kernel_initializer='he_normal')(conv)
+
+    return conv
+
+print("Exercise 2: Decoder (Upsampling Block)")
+print("==========")
+input_size1=(12, 16, 256)
+input_size2 = (24, 32, 128)
+n_filters = 32
+expansive_inputs = Input(input_size1)
+contractive_inputs =  Input(input_size2)
+cblock1 = upsampling_block(expansive_inputs, contractive_inputs, n_filters * 1)
+model1 = tf.keras.Model(inputs=[expansive_inputs, contractive_inputs], outputs=cblock1)
+
+output1 = [['InputLayer', [None, 12, 16, 256], 0],
+            ['Conv2DTranspose', [None, 24, 32, 32], 73760],
+            ['InputLayer', [None, 24, 32, 128], 0],
+            ['Concatenate', [None, 24, 32, 160], 0],
+            ['Conv2D', [None, 24, 32, 32], 46112, 'same', 'relu', 'HeNormal'],
+            ['Conv2D', [None, 24, 32, 32], 9248, 'same', 'relu', 'HeNormal']]
+
+print('Block 1:')
+for layer in summaryUNet(model1):
+    print(layer)
+
+comparatorUNet(summaryUNet(model1), output1)
+print("========================================")
