@@ -299,3 +299,11 @@ num_channels = 3
 unet = unet_model((img_height, img_width, num_channels))
 comparatorUNet(summaryUNet(unet), outputsUnet.unet_model_output)
 print("========================================")
+
+# Set Model Dimensions & Display the model summary
+img_height = 96
+img_width = 128
+num_channels = 3
+
+unet = unet_model((img_height, img_width, num_channels))
+unet.summary()
