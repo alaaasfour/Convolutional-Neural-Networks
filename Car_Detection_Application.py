@@ -25,11 +25,11 @@ import PIL
 from PIL import ImageFont, ImageDraw, Image
 import tensorflow as tf
 from tensorflow.keras import backend as K
+from keras.src.saving import load_model
 
 #from tensorflow.keras.models import load_model
 #from yad2k.models.keras_yolo import yolo_head
 #from yad2k.utils.utils import draw_boxes, get_colors_for_classes, scale_boxes, read_classes, read_anchors, preprocess_image
-
 
 """
 Exercise 1: YOLO Model
@@ -347,3 +347,68 @@ assert np.isclose(classes[2].numpy(), 16), "Wrong value on classes"
 print("\033[92m All tests passed!")
 print("========================================")
 
+"""
+Exercise 5: Test YOLO Pre-trained Model on Images
+In this exercise we are going to use a pre-trained model and test it on the car detection dataset.
+Training a YOLO model takes a very long time and requires a fairly large dataset of labelled bounding boxes for a large range of target classes. 
+We are going to load an existing pre-trained Keras YOLO model stored in "yolo.h5".
+
+The model is used to compute the output `yolo_model.output` `yolo_model.output` is processed by yolo_head. 
+It gives us `yolo_outputs` `yolo_outputs` goes through a filtering function, `yolo_eval`. It outputs the predictions: `out_scores`, `out_boxes`, `out_classes`.
+
+Arguments:
+    image_file: name of an image stored in the "images" folder.
+
+Returns:
+    out_scores: tensor of shape (None, ), scores of the predicted boxes
+    out_boxes: tensor of shape (None, 4), coordinates of the predicted boxes
+    out_classes: tensor of shape (None, ), class index of the predicted boxes
+
+"""
+def read_classes(classes_path):
+    with open(classes_path) as f:
+        class_names = f.readlines()
+    class_names = [c.strip() for c in class_names]
+    return class_names
+
+def read_anchors(anchors_path):
+    with open(anchors_path) as f:
+        anchors = f.readline()
+        anchors = [float(x) for x in anchors.split(',')]
+        anchors = np.array(anchors).reshape(-1, 2)
+    return anchors
+
+class_names = read_classes("model_data/coco_classes.txt")
+anchors = read_anchors("model_data/yolo_anchors.txt")
+model_image_size = (608, 608) # Same as yolo_model input layer size
+
+yolo_model = load_model("model_data/", compile=False)
+yolo_model.summary()
+
+
+def predict(image_file):
+
+    # Preprocess your image
+    image, image_data = preprocess_image("images/" + image_file, model_image_size=(608, 608))
+
+    yolo_model_outputs = yolo_model(image_data)
+    yolo_outputs = yolo_head(yolo_model_outputs, anchors, len(class_names))
+
+    out_scores, out_boxes, out_classes = yolo_eval(yolo_outputs, [image.size[1], image.size[0]], 10, 0.3, 0.5)
+
+    # Print predictions info
+    print('Found {} boxes for {}'.format(len(out_boxes), "images/" + image_file))
+    # Generate colors for drawing bounding boxes.
+    colors = get_colors_for_classes(len(class_names))
+    # Draw bounding boxes on the image file
+    # draw_boxes2(image, out_scores, out_boxes, out_classes, class_names, colors, image_shape)
+    draw_boxes(image, out_boxes, out_classes, class_names, out_scores)
+    # Save the predicted bounding box on the image
+    image.save(os.path.join("out", image_file), quality=100)
+    # Display the results in the notebook
+    output_image = Image.open(os.path.join("out", image_file))
+    imshow(output_image)
+
+    return out_scores, out_boxes, out_classes
+
+out_scores, out_boxes, out_classes = predict("test.jpg")
