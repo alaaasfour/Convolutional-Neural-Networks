@@ -215,3 +215,41 @@ def summary2(model):
             descriptors.append(layer.activation.__name__)
         result.append(descriptors)
     return result
+
+def summaryUNet(model):
+    model.compile(optimizer='adam',
+                  loss='categorical_crossentropy',
+                  metrics=['accuracy'])
+    result = []
+    for layer in model.layers:
+        descriptors = [layer.__class__.__name__]
+        if hasattr(layer, 'output_shape'):
+            descriptors.append(list(layer.output_shape))
+        elif hasattr(layer, 'output'):
+            descriptors.append(list(layer.output.shape))
+        else:
+            descriptors.append('N/A')
+
+        descriptors.append(layer.count_params())
+        if isinstance(layer, Conv2D):
+            descriptors.append(layer.padding)
+            descriptors.append(layer.activation.__name__)
+            descriptors.append(layer.kernel_initializer.__class__.__name__)
+        elif isinstance(layer, MaxPooling2D):
+            descriptors.append(layer.pool_size)
+        elif isinstance(layer, Dropout):
+            descriptors.append(layer.rate)
+        result.append(descriptors)
+    return result
+
+def comparatorUNet(learner, instructor):
+    if len(learner) != len(instructor):
+        raise AssertionError(f"The number of layers in the proposed model does not agree with the expected model: expected {len(instructor)}, got {len(learner)}.")
+    for a, b in zip(learner, instructor):
+        if tuple(a) != tuple(b):
+            print(colored("Test failed", attrs=['bold']),
+                  "\n Expected value \n\n", colored(f"{b}", "green"),
+                  "\n\n does not match the input value: \n\n",
+                  colored(f"{a}", "red"))
+            raise AssertionError("Error in test")
+    print(colored("All tests passed!", "green"))
