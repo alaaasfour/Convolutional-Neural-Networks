@@ -348,3 +348,34 @@ for image, mask in processed_image_ds.take(1):
     print(mask.shape)
 display([sample_image, sample_mask])
 
+
+# Training the Model
+EPOCHS = 5
+VAL_SUBSPLITS = 5
+BUFFER_SIZE = 500
+BATCH_SIZE = 32
+train_dataset = processed_image_ds.cache().shuffle(BUFFER_SIZE).batch(BATCH_SIZE)
+print(processed_image_ds.element_spec)
+model_history = unet.fit(train_dataset, epochs=EPOCHS)
+
+def create_mask(pred_mask):
+    pred_mask = tf.argmax(pred_mask, axis=-1)
+    pred_mask = pred_mask[..., tf.newaxis]
+    return pred_mask[0]
+
+plt.plot(model_history.history["accuracy"])
+plt.show()
+
+def show_predictions(dataset=None, num=1):
+    """
+    Displays the first image of each of the num batches
+    """
+    if dataset:
+        for image, mask in dataset.take(num):
+            pred_mask = unet.predict(image)
+            display([image[0], mask[0], create_mask(pred_mask)])
+    else:
+        display([sample_image, sample_mask,
+             create_mask(unet.predict(sample_image[tf.newaxis, ...]))])
+
+show_predictions(train_dataset, 6)
