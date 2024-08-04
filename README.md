@@ -122,3 +122,62 @@ datasets/
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
 
+# Image Segmentation with U-Net 🏞️
+
+## Description 📖
+### This project implements a U-Net, a type of Convolutional Neural Network (CNN) designed for quick and precise image segmentation, and uses it to predict a label for every pixel in an image from a self-driving car dataset.
+
+## Prerequisites 🐍🐼
+Make sure you have Python 3.10+ installed on your machine. In addition to the following packages:
+* `python 3.x`
+* `matplotlib`
+* `TensorFlow`
+* `keras`
+* `numpy`
+* `pandas`
+* `imageio.v2`
+
+
+## Dataset 💾
+### The dataset used in this project comes from the CARLA self-driving car simulator. It consists of images and their corresponding masks, which provide pixel-wise annotations for various objects.
+
+## Architecture 🏛️ 
+
+### U-Net 🕸️
+U-Net, named for its U-shape, was originally created for tumor detection but has since become popular for other semantic segmentation tasks. It builds on the Fully Convolutional Network (FCN) architecture, replacing dense layers with transposed convolution layers to upsample the feature map back to the original input size while preserving spatial information.
+
+
+## Components ⛓️🧮
+#### 1. Encoder (Downsampling Path): A series of convolutional blocks with Conv2D layers, optional dropout, and MaxPooling2D layers.
+#### 2. Bottleneck: The lowest part of the U-Net where the image representation is at its most abstract.
+#### 3. Decoder (Upsampling Path): A series of upsampling blocks with Conv2DTranspose layers and skip connections from the encoder.
+
+
+## Code Implementation 🧑🏻‍💻
+The code implements the U-Net architecture as follows:
+
+### 1. Convolutional Block: `conv_block`
+### 2. Upsampling Block: `upsampling_block`
+### 3. U-Net Model: `unet_model`
+
+
+## Usage 🧰
+
+### Preprocessing the Data
+The dataset is preprocessed by reading the images and masks, resizing them, and converting them to float32 data type.
+
+### Training the Model
+The model is compiled with the Adam optimizer and sparse categorical cross-entropy loss, and trained on the processed dataset.
+
+## Results 📉📈
+The model's performance can be visualized by comparing the predicted masks with the ground truth masks. The code includes functions to display the input image, true mask, and predicted mask.
+
+## Screenshots 🖼️
+1. Unmasked and Masked Images Samples
+![Unmasked and Masked Images Samples.png](Unmasked%20and%20Masked%20Images%20Samples.png)
+
+2. Model Accuracy After Training the Model
+![Model Accuracy After Training the Model.png](Model%20Accuracy%20After%20Training%20the%20Model.png)
+
+3. Showing the predictions masks against the true mask and the original input image
+![Showing the Predictions.png](Showing%20the%20Predictions.png)
