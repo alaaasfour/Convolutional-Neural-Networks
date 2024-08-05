@@ -345,9 +345,13 @@ def train_step(generated_image):
 
 generated_image = tf.Variable(generated_image)
 
-
+"""
+Train the Model
+The following code generates an artistic image. It should take about 3min on a GPU for 2500 iterations. 
+Neural Style Transfer is generally trained using GPUs.
+If we increase the learning rate you can speed up the style transfer, but often at the cost of quality.
+"""
 # Show the generated image at some epochs
-# Uncomment to reset the style transfer process. You will need to compile the train_step function again
 epochs = 2501
 for i in range(epochs):
     train_step(generated_image)
@@ -358,3 +362,16 @@ for i in range(epochs):
         imshow(image)
         image.save(f"output/image_{i}.jpg")
         plt.show()
+
+# Show the 3 images in a row
+fig = plt.figure(figsize=(16, 4))
+ax = fig.add_subplot(1, 3, 1)
+imshow(content_image[0])
+ax.title.set_text('Content image')
+ax = fig.add_subplot(1, 3, 2)
+imshow(style_image[0])
+ax.title.set_text('Style image')
+ax = fig.add_subplot(1, 3, 3)
+imshow(generated_image[0])
+ax.title.set_text('Generated image')
+plt.show()
