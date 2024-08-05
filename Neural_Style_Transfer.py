@@ -106,7 +106,25 @@ A = tf.random.normal([3, 2 * 1], mean=1, stddev=4)
 print(gram_matrix(A))
 
 
+"""
+Exercise 3: Computing the Layer Style Cost
+
+Now, let's compute the style cost for a single layer using the following 3 steps:
+    1. Retrieve dimensions from the hidden layer activations a_G:
+    2. Unroll the hidden layer activations a_S and a_G into 2D matrices.
+    3. Compute the Style matrix of the images S and G.
+    4. Compute the Style cost
+
+
+Argument:
+    a_S: tensor of dimension (1, n_H, n_W, n_C), hidden layer activations representing style of the image S 
+    a_G: tensor of dimension (1, n_H, n_W, n_C), hidden layer activations representing style of the image G
+
+Returns:
+    J_style_layer: tensor representing a scalar value, style cost defined above by equation (2)
+"""
 def compute_layer_style_cost(a_S, a_G):
+    # Retrieve dimensions from a_G
     _, n_H, n_W, n_C = a_G.get_shape().as_list()
 
     # Reshape the tensors from (1, n_H, n_W, n_C) to (n_C, n_H * n_W)
