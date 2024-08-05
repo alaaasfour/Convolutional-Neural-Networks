@@ -25,7 +25,11 @@ from matplotlib.pyplot import imshow
 from public_tests import *
 
 
-
+"""
+Transfer Learning
+Neural Style Transfer (NST) uses a previously trained convolutional network, and builds on top of that. 
+The idea of using a network trained on a different task and applying it to a new task is called transfer learning.
+"""
 
 tf.random.set_seed(272)
 pp = pprint.PrettyPrinter(indent=4)
@@ -35,6 +39,7 @@ vgg = tf.keras.applications.VGG19(include_top=False,
                                   weights='pretrained-model/vgg19_weights_tf_dim_ordering_tf_kernels_notop.h5')
 vgg.trainable = False
 pp.pprint(vgg)
+
 
 content_image = Image.open("imagesNST/louvre.jpg")
 print("The content image (C) shows the Louvre museum's pyramid surrounded by old Paris buildings, against a sunny sky with a few clouds.")
