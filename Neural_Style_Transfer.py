@@ -41,23 +41,45 @@ vgg.trainable = False
 pp.pprint(vgg)
 
 
+"""
+Neural Style Transfer (NST)
+We will build the NST in three steps:
+    1. First, we will build the content cost function  𝐽𝑐𝑜𝑛𝑡𝑒𝑛𝑡(𝐶,𝐺) 
+    2. Second, we will build the style cost function  𝐽𝑠𝑡𝑦𝑙𝑒(𝑆,𝐺) 
+    3. Finally, we'll put it all together to get  𝐽(𝐺)=𝛼𝐽𝑐𝑜𝑛𝑡𝑒𝑛𝑡(𝐶,𝐺)+𝛽𝐽𝑠𝑡𝑦𝑙𝑒(𝑆,𝐺).
+    
+
+"""
 content_image = Image.open("imagesNST/louvre.jpg")
 print("The content image (C) shows the Louvre museum's pyramid surrounded by old Paris buildings, against a sunny sky with a few clouds.")
 plt.imshow(content_image)
 plt.show()
+
+"""
+Exercise 1: Computing the Content Cost
+Now, we will compute the content cost using TensorFlow
+
+
+Argument:
+    a_C: tensor of dimension (1, n_H, n_W, n_C), hidden layer activations representing content of the image C 
+    a_G: tensor of dimension (1, n_H, n_W, n_C), hidden layer activations representing content of the image G
+
+Returns:
+    J_content: scalar that you compute using equation 1 above.
+"""
 
 def compute_content_cost(content_output, generated_output):
     a_C = content_output[-1]
     a_G = generated_output[-1]
 
     # Retrieve dimensions from a_G
-    # _, n_H, n_W, n_C = tf.shape(a_G)
     _, n_H, n_W, n_C = a_G.get_shape().as_list()
 
-    # DO NOT reshape 'content_output' or 'generated_output'
+    # Reshape 'a_C' and 'a_G'
     a_C_unrolled = tf.reshape(a_C, shape=[-1, n_H * n_W, n_C])
     a_G_unrolled = tf.reshape(a_G, shape=[-1, n_H * n_W, n_C])
 
+    # compute the cost with tensorflow
     J_content = tf.reduce_sum(tf.square(a_C_unrolled - a_G_unrolled)) / (4.0 * n_H * n_W * n_C)
 
     return J_content
