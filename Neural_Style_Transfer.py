@@ -115,7 +115,6 @@ Now, let's compute the style cost for a single layer using the following 3 steps
     3. Compute the Style matrix of the images S and G.
     4. Compute the Style cost
 
-
 Argument:
     a_S: tensor of dimension (1, n_H, n_W, n_C), hidden layer activations representing style of the image S 
     a_G: tensor of dimension (1, n_H, n_W, n_C), hidden layer activations representing style of the image G
@@ -140,11 +139,13 @@ def compute_layer_style_cost(a_S, a_G):
 
     return J_style_layer
 
+#  Listing the layer names:
 for layer in vgg.layers:
     print(layer.name)
 
 print(vgg.get_layer('block5_conv4').output)
 
+# Now choose layers to represent the style of the image and assign style costs:
 STYLE_LAYERS = [
     ('block1_conv1', 0.2),
     ('block2_conv1', 0.2),
@@ -153,6 +154,27 @@ STYLE_LAYERS = [
     ('block5_conv1', 0.2)]
 
 
+"""
+Exercise 4: Computing the Style Cost
+
+Now, let's compute the style cost as follows:
+For each layer:
+    1. Select the activation (the output tensor) of the current layer.
+    2. Get the style of the style image "S" from the current layer.
+    3. Get the style of the generated image "G" from the current layer.
+    4. Compute the "style cost" for the current layer
+    5. Add the weighted style cost to the overall style cost (J_style)
+
+Argument:
+    style_image_output: our tensorflow model
+    generated_image_output
+    STYLE_LAYERS: A python list containing:
+                - the names of the layers we would like to extract style from
+                - a coefficient for each of them
+
+Returns:
+    J_style: tensor representing a scalar value, style cost defined above by equation (2)
+"""
 def compute_style_cost(style_image_output, generated_image_output, STYLE_LAYERS=STYLE_LAYERS):
     # initialize the overall style cost
     J_style = 0
