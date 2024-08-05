@@ -11,7 +11,6 @@ The generated image G combines the "content" of the image C with the "style" of 
 """
 
 # Packages
-
 import os
 import sys
 import pprint
@@ -23,7 +22,6 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import imshow
 from public_tests import *
-
 
 """
 Transfer Learning
@@ -40,15 +38,12 @@ vgg = tf.keras.applications.VGG19(include_top=False,
 vgg.trainable = False
 pp.pprint(vgg)
 
-
 """
 Neural Style Transfer (NST)
 We will build the NST in three steps:
     1. First, we will build the content cost function  𝐽𝑐𝑜𝑛𝑡𝑒𝑛𝑡(𝐶,𝐺) 
     2. Second, we will build the style cost function  𝐽𝑠𝑡𝑦𝑙𝑒(𝑆,𝐺) 
     3. Finally, we'll put it all together to get  𝐽(𝐺)=𝛼𝐽𝑐𝑜𝑛𝑡𝑒𝑛𝑡(𝐶,𝐺)+𝛽𝐽𝑠𝑡𝑦𝑙𝑒(𝑆,𝐺).
-    
-
 """
 content_image = Image.open("imagesNST/louvre.jpg")
 print("The content image (C) shows the Louvre museum's pyramid surrounded by old Paris buildings, against a sunny sky with a few clouds.")
@@ -59,7 +54,6 @@ plt.show()
 Exercise 1: Computing the Content Cost
 Now, we will compute the content cost using TensorFlow
 
-
 Argument:
     a_C: tensor of dimension (1, n_H, n_W, n_C), hidden layer activations representing content of the image C 
     a_G: tensor of dimension (1, n_H, n_W, n_C), hidden layer activations representing content of the image G
@@ -67,7 +61,6 @@ Argument:
 Returns:
     J_content: scalar that you compute using equation 1 above.
 """
-
 def compute_content_cost(content_output, generated_output):
     a_C = content_output[-1]
     a_G = generated_output[-1]
@@ -87,11 +80,23 @@ def compute_content_cost(content_output, generated_output):
 content_output = tf.random.normal([1, 1, 4, 4, 3], mean=1, stddev=4)
 generated_output = tf.random.normal([1, 1, 4, 4, 3], mean=1, stddev=4)
 J_content = compute_content_cost(content_output, generated_output)
-
 print(J_content)
 
+"""
+Exercise 2: Computing the Style Cost
 
+Gram matrix
+The style matrix is also called a "Gram matrix."
+In linear algebra, the Gram matrix G of a set of vectors  (𝑣1,…,𝑣𝑛)  is the matrix of dot products, whose entries are  𝐺𝑖𝑗=𝑣𝑇𝑖𝑣𝑗=𝑛𝑝.𝑑𝑜𝑡(𝑣𝑖,𝑣𝑗) .
+In other words, 𝐺𝑖𝑗 compares how similar 𝑣𝑖 is to 𝑣𝑗: If they are highly similar, we would expect them to have a 
+large dot product, and thus for 𝐺𝑖𝑗 to be large.
 
+Argument:
+    A: matrix of shape (n_C, n_H*n_W)
+
+Returns:
+    GA: Gram matrix of A, of shape (n_C, n_C)
+"""
 def gram_matrix(A):
     GA = tf.matmul(A, tf.transpose(A))
 
