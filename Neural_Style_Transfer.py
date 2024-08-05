@@ -221,6 +221,8 @@ J_style = 0.8
 
 print(total_cost(J_content, J_style, 10, 40))
 
+
+# Load the Content Image
 content_image = np.array(Image.open("imagesNST/louvre_small.jpg").resize((img_size, img_size)))
 content_image = tf.constant(np.reshape(content_image, ((1,) + content_image.shape)))
 
@@ -228,6 +230,8 @@ print(content_image.shape)
 imshow(content_image[0])
 plt.show()
 
+
+# Load the Style Image
 style_image =  np.array(Image.open("imagesNST/monet.jpg").resize((img_size, img_size)))
 style_image = tf.constant(np.reshape(style_image, ((1,) + style_image.shape)))
 
@@ -235,7 +239,7 @@ print(style_image.shape)
 imshow(style_image[0])
 plt.show()
 
-
+# Randomly Initialize the Image to be Generated
 generated_image = tf.Variable(tf.image.convert_image_dtype(content_image, tf.float32))
 noise = tf.random.uniform(tf.shape(generated_image), -0.25, 0.25)
 generated_image = tf.add(generated_image, noise)
@@ -246,6 +250,7 @@ imshow(generated_image.numpy()[0])
 plt.show()
 
 
+# Load Pre-trained VGG19 Model
 def get_layer_outputs(vgg, layer_names):
     """ Creates a vgg model that returns a list of intermediate output values."""
     outputs = [vgg.get_layer(layer[0]).output for layer in layer_names]
@@ -253,10 +258,11 @@ def get_layer_outputs(vgg, layer_names):
     model = tf.keras.Model([vgg.input], outputs)
     return model
 
+# Define the content layer and build the model.
 content_layer = [('block5_conv4', 1)]
-
 vgg_model_outputs = get_layer_outputs(vgg, STYLE_LAYERS + content_layer)
 
+# Save the outputs for the content and style layers in separate variables.
 content_target = vgg_model_outputs(content_image)  # Content encoder
 style_targets = vgg_model_outputs(style_image)     # Style encoder
 
@@ -272,19 +278,33 @@ a_S = vgg_model_outputs(preprocessed_style)
 
 
 def clip_0_1(image):
+    """
+    Truncate all the pixels in the tensor to be between 0 and 1
+    Arguments:
+        image: Tensor
+        J_style: style cost coded above
 
+    Returns:
+        Tensor
+    """
     return tf.clip_by_value(image, clip_value_min=0.0, clip_value_max=1.0)
 
-
 def tensor_to_image(tensor):
+    """
+    Converts the given tensor into a PIL image
 
+    Arguments:
+        tensor: Tensor
+
+    Returns:
+        Image: A PIL image
+    """
     tensor = tensor * 255
     tensor = np.array(tensor, dtype=np.uint8)
     if np.ndim(tensor) > 3:
         assert tensor.shape[0] == 1
         tensor = tensor[0]
     return Image.fromarray(tensor)
-
 
 optimizer = tf.keras.optimizers.Adam(learning_rate=0.01)
 
