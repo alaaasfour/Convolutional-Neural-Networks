@@ -198,7 +198,7 @@ def compute_style_cost(style_image_output, generated_image_output, STYLE_LAYERS=
 
 
 """
-Exercise 5:  Defining the Total Cost to Optimize
+Exercise 5: Defining the Total Cost to Optimize
 Finally, we will create a cost function that minimizes both the style and the content cost. The formula is:
                             𝐽(𝐺)= 𝛼𝐽𝑐𝑜𝑛𝑡𝑒𝑛𝑡(𝐶,𝐺) + 𝛽𝐽𝑠𝑡𝑦𝑙𝑒(𝑆,𝐺)
 
@@ -309,27 +309,35 @@ def tensor_to_image(tensor):
 optimizer = tf.keras.optimizers.Adam(learning_rate=0.01)
 
 
+
+"""
+Exercise 6: Train Step
+Now, we will implement the train_step() function for transfer learning
+
+    - Use the Adam optimizer to minimize the total cost J.
+    - Use a learning rate of 0.01
+    - We will use tf.GradientTape to update the image.
+    - Within the tf.GradientTape():
+        - Compute the encoding of the generated image using vgg_model_outputs. Assign the result to a_G.
+        - Compute the total cost J, using the global variables a_C, a_S and the local a_G
+        - Use alpha = 10 and beta = 40.
+"""
 @tf.function()
 def train_step(generated_image):
     with tf.GradientTape() as tape:
 
         # Compute a_G as the vgg_model_outputs for the current generated image
-        # (1 line)
         a_G = vgg_model_outputs(generated_image)
 
         # Compute the style cost
-        # (1 line)
         J_style = compute_style_cost(a_S, a_G)
 
-        # (2 lines)
         # Compute the content cost
         J_content = compute_content_cost(a_C, a_G)
         # Compute the total cost
         J = total_cost(J_content, J_style, alpha=10, beta=40)
 
-
     grad = tape.gradient(J, generated_image)
-
     optimizer.apply_gradients([(grad, generated_image)])
     generated_image.assign(clip_0_1(generated_image))
     # For grading purposes
