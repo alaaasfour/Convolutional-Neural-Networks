@@ -175,6 +175,7 @@ Argument:
 Returns:
     J_style: tensor representing a scalar value, style cost defined above by equation (2)
 """
+
 def compute_style_cost(style_image_output, generated_image_output, STYLE_LAYERS=STYLE_LAYERS):
     # initialize the overall style cost
     J_style = 0
@@ -196,6 +197,19 @@ def compute_style_cost(style_image_output, generated_image_output, STYLE_LAYERS=
     return J_style
 
 
+"""
+Exercise 5:  Defining the Total Cost to Optimize
+Finally, we will create a cost function that minimizes both the style and the content cost. The formula is:
+                            𝐽(𝐺)= 𝛼𝐽𝑐𝑜𝑛𝑡𝑒𝑛𝑡(𝐶,𝐺) + 𝛽𝐽𝑠𝑡𝑦𝑙𝑒(𝑆,𝐺)
+
+Argument:
+    J_content: content cost coded above
+    J_style: style cost coded above
+    alpha: hyperparameter weighting the importance of the content cost
+    beta: hyperparameter weighting the importance of the style cost
+Returns:
+    J: total cost as defined by the formula above.
+"""
 @tf.function()
 def total_cost(J_content, J_style, alpha=10, beta=40):
     J = alpha * J_content + beta * J_style
