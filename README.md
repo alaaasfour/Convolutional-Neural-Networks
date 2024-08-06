@@ -109,15 +109,19 @@ datasets/
 
 ## Screenshots 🖼️
 1. Sample from the Dataset (Alpaca/Non-Alpaca)
+
 ![Alpaca-NonAlpaca Dataset.png](Alpaca-NonAlpaca%20Dataset.png)
 
 2. Data Augmenter Function: an image from the training set has been augmented with simple transformations
+
 ![Simple Transformation.png](Simple%20Transformation.png)
 
 3. Training and Validation Accuracy (Before Fine-Tuning)
+
 ![Data Accuracy Before FT.png](Data%20Accuracy%20Before%20FT.png)
 
 4. Training and Validation Accuracy (After Fine-Tuning)
+
 ![Data Accuracy After FT.png](Data%20Accuracy%20After%20FT.png)
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
@@ -174,10 +178,68 @@ The model's performance can be visualized by comparing the predicted masks with 
 
 ## Screenshots 🖼️
 1. Unmasked and Masked Images Samples
+
 ![Unmasked and Masked Images Samples.png](Unmasked%20and%20Masked%20Images%20Samples.png)
 
 2. Model Accuracy After Training the Model
+
 ![Model Accuracy After Training the Model.png](Model%20Accuracy%20After%20Training%20the%20Model.png)
 
 3. Showing the predictions masks against the true mask and the original input image
+
 ![Showing the Predictions.png](Showing%20the%20Predictions.png)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+# Neural Style Transfer with TensorFlow 🏞️
+
+## Description 📖
+### This project implements the Neural Style Transfer (NST) algorithm using TensorFlow. The goal of NST is to merge two images: a "content" image and a "style" image, to create a "generated" image that combines the content of the content image with the style of the style image. The script provided accomplishes the following tasks:
+
+#### 1. Implements the neural style transfer algorithm.
+#### 2. Generates novel artistic images using the NST algorithm.
+#### 3. Defines the style cost function for Neural Style Transfer.
+#### 4. Defines the content cost function for Neural Style Transfer.
+
+
+
+## Prerequisites 🐍🐼
+Make sure you have Python 3.10+ installed on your machine. In addition to the following packages:
+* `python 3.x`
+* `matplotlib`
+* `TensorFlow 2.x`
+* `numpy`
+* `scipy`
+* `PIL (Pillow)`
+
+## Usage 🧰
+
+### 1. Place the content and style images in the `imagesNST` directory.
+### 2. Update the paths to the content and style images in the script if necessary.
+### 3. Run the script: `python Neural_Style_Transfer.py`
+
+
+## Script Breakdown 📜
+
+### Importing Packages
+The script starts by importing necessary packages including TensorFlow, NumPy, PIL, Matplotlib, and SciPy.
+
+### Transfer Learning
+The script uses a pre-trained VGG19 model for feature extraction. The model is loaded without the top classification layers and the weights are set to be non-trainable.
+
+### Neural Style Transfer Steps
+1. **Compute Content Cost:**
+The content cost measures how much the generated image differs from the content image in terms of content features extracted from the CNN.
+2. **Compute Style Cost:**
+The style cost measures how much the generated image differs from the style image in terms of style features. The style is represented by the Gram matrix of the activations.
+3. **Compute Total Cost:**
+The total cost is a weighted sum of the content and style costs. The weights (alpha and beta) control the trade-off between content and style.
+4. **Training Step:**
+The `train_step` function uses the Adam optimizer to minimize the total cost. The function computes the gradients of the total cost with respect to the generated image and updates the image.
+
+### Generating Images
+The script runs for a specified number of epochs, updating the generated image iteratively. The generated image is displayed and saved at regular intervals.
+
+### Displaying Results
+The script displays the content image, style image, and generated image side by side for comparison.
+
