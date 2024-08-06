@@ -243,3 +243,7 @@ The script runs for a specified number of epochs, updating the generated image i
 ### Displaying Results
 The script displays the content image, style image, and generated image side by side for comparison.
 
+## Screenshots 🖼️
+The Generated Image Using the Neural Style Transfer
+
+![Art_Generation_with_Neural_Style_Transfer.png](Art_Generation_with_Neural_Style_Transfer.png)
